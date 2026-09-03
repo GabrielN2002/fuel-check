@@ -149,7 +149,22 @@ function App() {
   };
 
   return (
-    <div className="m-5 flex flex-col items-center">
+    <div className="m-5 flex flex-col items-center gap-3">
+      {(offlineReady || needRefresh) && (
+        <div className="flex items-center gap-3 rounded-xl border-2 border-destructive p-2">
+          {offlineReady ? (
+            <span>App ready to work offline</span>
+          ) : (
+            <span>
+              New content available, click on reload button to update.
+            </span>
+          )}
+          {needRefresh && (
+            <Button onClick={() => updateServiceWorker(true)}>Refresh</Button>
+          )}
+          <Button onClick={() => close()}>Close</Button>
+        </div>
+      )}
       <Card className="w-full md:w-3/4">
         <CardHeader>
           <CardTitle>Fuel Consumption Check Calculator</CardTitle>
@@ -166,23 +181,7 @@ function App() {
             <StartDialog data={calculator} onStart={handleStart} />
             <CalculateDialog data={calculator} onCalculate={handleCalculate} />
           </div>
-          {(offlineReady || needRefresh) && (
-            <div>
-              {offlineReady ? (
-                <span>App ready to work offline</span>
-              ) : (
-                <span>
-                  New content available, click on reload button to update.
-                </span>
-              )}
-              {needRefresh && (
-                <Button onClick={() => updateServiceWorker(true)}>
-                  Refresh
-                </Button>
-              )}
-              <Button onClick={() => close()}>Close</Button>
-            </div>
-          )}
+
           <div className="">
             <Badge className={isOnline ? "bg-green-300" : "bg-red-300"}>
               {isOnline ? "Online" : "Offline"}
