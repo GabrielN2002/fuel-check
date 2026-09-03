@@ -9,5 +9,8 @@ export type Calculator = {
   boTime: Date | null;
   boVFR: Date | null;
   boIFR: Date | null;
+  auxTank: boolean;
+  auxInitial: number;
+  auxFinal: number;
   error: string;
 };

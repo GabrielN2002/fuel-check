@@ -64,11 +64,17 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
               className="size-4 text-muted-foreground"
               aria-hidden="true"
             />
-            Starting reading
+            Initial reading
           </div>
           <dl className="divide-y">
             <ResultItem label="Time" value={formatTime(data.startTime)} />
-            <ResultItem label="Fuel" value={`${data.fuelInitial} lbs`} />
+            <ResultItem label="Main Fuel" value={`${data.fuelInitial} lbs`} />
+            {data.auxTank && (
+              <ResultItem
+                label="Aux Fuel"
+                value={`${data.auxInitial} lbs`}
+              ></ResultItem>
+            )}
           </dl>
         </div>
 
@@ -80,7 +86,13 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
           {data.stopTime ? (
             <dl className="divide-y">
               <ResultItem label="Time" value={formatTime(data.stopTime)} />
-              <ResultItem label="Fuel" value={`${data.fuelFinal} lbs`} />
+              <ResultItem label="Main Fuel" value={`${data.fuelFinal} lbs`} />
+              {data.auxTank && (
+                <ResultItem
+                  label="Aux Fuel"
+                  value={`${data.auxFinal} lbs`}
+                ></ResultItem>
+              )}
             </dl>
           ) : (
             <p className="py-5 text-sm text-muted-foreground">
@@ -113,7 +125,7 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
           </dl>
 
           <div className="grid border-t bg-muted/20 sm:grid-cols-2 sm:divide-x">
-            <div className="py-3 px-4">
+            <div className="px-4 py-3">
               <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 <ShieldCheck className="size-4" aria-hidden="true" />
                 VFR reserve
@@ -122,7 +134,7 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
                 {formatTime(data.boVFR)}
               </p>
             </div>
-            <div className="border-t py-3 px-4 sm:border-t-0">
+            <div className="border-t px-4 py-3 sm:border-t-0">
               <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 <ShieldCheck className="size-4" aria-hidden="true" />
                 IFR reserve

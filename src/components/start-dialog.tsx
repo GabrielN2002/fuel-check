@@ -20,24 +20,40 @@ import {
   InputGroupText,
 } from "./ui/input-group";
 import { useState, type ChangeEvent } from "react";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
 
 type StartDialogProps = {
   data: Calculator;
-  onStart(fuelInitial: Calculator["fuelInitial"]): void;
+  onStart(
+    fuelInitial: Calculator["fuelInitial"],
+    auxTank: Calculator["auxTank"],
+    auxInitial: Calculator["auxInitial"],
+  ): void;
 };
 
 function StartDialog({ data, onStart }: StartDialogProps) {
   const [fuelInitial, setFuelInitial] = useState<number>(0);
+  const [auxTank, setAuxtank] = useState<boolean>(false);
+  const [auxInitial, setAuxInitial] = useState<number>(0);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleMainFuel = (e: ChangeEvent<HTMLInputElement>) => {
     setFuelInitial(Number(e.target.value));
+  };
+  const handleAuxFuel = (e: ChangeEvent<HTMLInputElement>) => {
+    setAuxInitial(Number(e.target.value));
+  };
+  const handleCheckedChange = () => {
+    setAuxtank(!auxTank);
   };
 
   const handleStart = () => {
     if (fuelInitial <= 0) return;
 
-    onStart(fuelInitial);
+    onStart(fuelInitial, auxTank, auxInitial);
     setFuelInitial(0);
+    setAuxtank(false);
+    setAuxInitial(0);
   };
 
   return (
@@ -55,10 +71,13 @@ function StartDialog({ data, onStart }: StartDialogProps) {
             <AlertDialogDescription>
               Enter initial fuel reading in lbs
             </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="initialFuel">Main Tanks</Label>
             <InputGroup>
               <InputGroupInput
                 value={fuelInitial || ""}
-                onChange={(e) => handleInputChange(e)}
+                onChange={(e) => handleMainFuel(e)}
                 type="number"
                 id="initialFuel"
                 autoComplete="off"
@@ -71,7 +90,37 @@ function StartDialog({ data, onStart }: StartDialogProps) {
                 </InputGroupText>
               </InputGroupAddon>
             </InputGroup>
-          </AlertDialogHeader>
+            <div className="flex gap-3">
+              <Switch
+                checked={auxTank}
+                onCheckedChange={handleCheckedChange}
+                id="auxTank"
+              ></Switch>
+              <Label htmlFor="auxTank">Auxiliary Tank</Label>
+            </div>
+
+            {auxTank && (
+              <>
+                <Label htmlFor="auxFuel">Auxiliary Tank</Label>
+                <InputGroup>
+                  <InputGroupInput
+                    value={auxInitial || ""}
+                    onChange={(e) => handleAuxFuel(e)}
+                    type="number"
+                    id="auxFuel"
+                    autoComplete="off"
+                    placeholder="0 lbs"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>
+                      {data.isStarted &&
+                        `Start: ${data.startTime?.toLocaleTimeString()}`}
+                    </InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
+              </>
+            )}
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
             <AlertDialogCancel

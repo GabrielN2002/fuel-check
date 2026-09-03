@@ -31,6 +31,9 @@ const initialCalculator: Calculator = {
   boTime: null,
   boVFR: null,
   boIFR: null,
+  auxTank: false,
+  auxInitial: 0,
+  auxFinal: 0,
   error: "",
 };
 
@@ -96,17 +99,26 @@ function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(calculator));
   }, [calculator]);
 
-  const handleStart = (fuel: Calculator["fuelInitial"]) => {
+  const handleStart = (
+    fuelInitial: Calculator["fuelInitial"],
+    auxTank: Calculator["auxTank"],
+    auxInitial: Calculator["auxInitial"],
+  ) => {
     handleReset();
     setCalculator((previous) => ({
       ...previous,
       startTime: new Date(),
-      fuelInitial: fuel,
+      fuelInitial: fuelInitial,
       isStarted: true,
+      auxTank: auxTank,
+      auxInitial: auxInitial,
     }));
   };
 
-  const handleCalculate = (fuelFinal: Calculator["fuelFinal"]) => {
+  const handleCalculate = (
+    fuelFinal: Calculator["fuelFinal"],
+    auxFinal: Calculator["auxFinal"],
+  ) => {
     setCalculator((previous) => {
       if (!previous.startTime) {
         return {
@@ -120,10 +132,11 @@ function App() {
       const elapsedMinutes =
         (stopTime.getTime() - previous.startTime.getTime()) / 1000 / 60;
 
-      const fuelUsed = previous.fuelInitial - fuelFinal;
+      const fuelUsed =
+        previous.fuelInitial + previous.auxInitial - (fuelFinal + auxFinal);
       const burnRate = fuelUsed * (60 / elapsedMinutes);
 
-      const timeToBO = fuelFinal / burnRate;
+      const timeToBO = (fuelFinal + auxFinal) / burnRate;
       const millisecondsToBO = timeToBO * 60 * 60 * 1000;
 
       const boTime = new Date(stopTime.getTime() + millisecondsToBO);
@@ -139,6 +152,7 @@ function App() {
         boTime,
         boVFR,
         boIFR,
+        auxFinal,
         error: "",
       };
     });
