@@ -1,0 +1,197 @@
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import CalculatorResults from "@/components/calculator-results";
+import type { Calculator } from "./types/calculator";
+import StopWatch from "./components/stop-watch";
+import ResetDialog from "./components/reset-dialog";
+import StartDialog from "./components/start-dialog";
+import CalculateDialog from "./components/calculate-dialog";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { useRegisterSW } from "virtual:pwa-register/react";
+import { Button } from "./components/ui/button";
+
+const STORAGE_KEY = "calculator";
+
+const initialCalculator: Calculator = {
+  startTime: null,
+  stopTime: null,
+  fuelInitial: 0,
+  fuelFinal: 0,
+  isStarted: false,
+  burnRate: 0,
+  timeToBO: 0,
+  boTime: null,
+  boVFR: null,
+  boIFR: null,
+  error: "",
+};
+
+function restoreDate(value: unknown): Date | null {
+  if (typeof value !== "string") return null;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function loadCalculator(): Calculator {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+
+  if (!savedData) {
+    return initialCalculator;
+  }
+
+  try {
+    const parsed = JSON.parse(savedData);
+
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Stored calculator data is invalid");
+    }
+
+    return {
+      ...initialCalculator,
+      ...parsed,
+      startTime: restoreDate(parsed.startTime),
+      stopTime: restoreDate(parsed.stopTime),
+      boTime: restoreDate(parsed.boTime),
+      boVFR: restoreDate(parsed.boVFR),
+      boIFR: restoreDate(parsed.boIFR),
+    };
+  } catch (error) {
+    console.error("Failed to load calculator data:", error, savedData);
+    return initialCalculator;
+  }
+}
+
+function App() {
+  const [calculator, setCalculator] = useState<Calculator>(loadCalculator);
+  const isOnline = useOnlineStatus();
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      // eslint-disable-next-line prefer-template
+      console.log("SW Registered: " + r);
+    },
+    onRegisterError(error) {
+      console.log("SW registration error", error);
+    },
+  });
+
+  const close = () => {
+    setOfflineReady(false);
+    setNeedRefresh(false);
+  };
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(calculator));
+  }, [calculator]);
+
+  const handleStart = (fuel: Calculator["fuelInitial"]) => {
+    handleReset();
+    setCalculator((previous) => ({
+      ...previous,
+      startTime: new Date(),
+      fuelInitial: fuel,
+      isStarted: true,
+    }));
+  };
+
+  const handleCalculate = (fuelFinal: Calculator["fuelFinal"]) => {
+    setCalculator((previous) => {
+      if (!previous.startTime) {
+        return {
+          ...previous,
+          error: "Burn rate calculation failed",
+        };
+      }
+
+      const stopTime = new Date();
+
+      const elapsedMinutes =
+        (stopTime.getTime() - previous.startTime.getTime()) / 1000 / 60;
+
+      const fuelUsed = previous.fuelInitial - fuelFinal;
+      const burnRate = fuelUsed * (60 / elapsedMinutes);
+
+      const timeToBO = fuelFinal / burnRate;
+      const millisecondsToBO = timeToBO * 60 * 60 * 1000;
+
+      const boTime = new Date(stopTime.getTime() + millisecondsToBO);
+      const boVFR = new Date(boTime.getTime() - 20 * 60 * 1000);
+      const boIFR = new Date(boTime.getTime() - 30 * 60 * 1000);
+
+      return {
+        ...previous,
+        stopTime,
+        fuelFinal,
+        burnRate,
+        timeToBO,
+        boTime,
+        boVFR,
+        boIFR,
+        error: "",
+      };
+    });
+  };
+
+  const handleReset = () => {
+    setCalculator(initialCalculator);
+  };
+
+  return (
+    <div className="m-5 flex flex-col items-center">
+      <Card className="w-full md:w-3/4">
+        <CardHeader>
+          <CardTitle>Fuel Consumption Check Calculator</CardTitle>
+          <CardAction>
+            <ResetDialog onReset={handleReset} data={calculator} />
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <StopWatch startTime={calculator.startTime} />
+          <CalculatorResults data={calculator} />
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <div className="flex gap-3">
+            <StartDialog data={calculator} onStart={handleStart} />
+            <CalculateDialog data={calculator} onCalculate={handleCalculate} />
+          </div>
+          {(offlineReady || needRefresh) && (
+            <div>
+              {offlineReady ? (
+                <span>App ready to work offline</span>
+              ) : (
+                <span>
+                  New content available, click on reload button to update.
+                </span>
+              )}
+              {needRefresh && (
+                <Button onClick={() => updateServiceWorker(true)}>
+                  Refresh
+                </Button>
+              )}
+              <Button onClick={() => close()}>Close</Button>
+            </div>
+          )}
+          <div className="">
+            <Badge className={isOnline ? "bg-green-300" : "bg-red-300"}>
+              {isOnline ? "Online" : "Offline"}
+            </Badge>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+export default App;
