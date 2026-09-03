@@ -42,7 +42,7 @@ function formatDuration(hours: number) {
 function CalculatorResults({ data }: CalculatorResultsProps) {
   if (!data.startTime) {
     return (
-      <div className="rounded-lg border border-dashed p-6 text-center">
+      <div className="p-6 text-center">
         <Fuel
           className="mx-auto mb-2 size-6 text-muted-foreground"
           aria-hidden="true"

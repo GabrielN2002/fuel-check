@@ -36,6 +36,7 @@ function StartDialog({ data, onStart }: StartDialogProps) {
   const [fuelInitial, setFuelInitial] = useState<number>(0);
   const [auxTank, setAuxtank] = useState<boolean>(false);
   const [auxInitial, setAuxInitial] = useState<number>(0);
+  const isStartDisabled = fuelInitial <= 0 || (auxTank && auxInitial <= 0);
 
   const handleMainFuel = (e: ChangeEvent<HTMLInputElement>) => {
     setFuelInitial(Number(e.target.value));
@@ -44,11 +45,14 @@ function StartDialog({ data, onStart }: StartDialogProps) {
     setAuxInitial(Number(e.target.value));
   };
   const handleCheckedChange = () => {
-    setAuxtank(!auxTank);
+    setAuxtank(() => {
+      setAuxInitial(0);
+      return !auxTank;
+    });
   };
 
   const handleStart = () => {
-    if (fuelInitial <= 0) return;
+    if (isStartDisabled) return;
 
     onStart(fuelInitial, auxTank, auxInitial);
     setFuelInitial(0);
@@ -124,7 +128,7 @@ function StartDialog({ data, onStart }: StartDialogProps) {
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
             <AlertDialogCancel
-              disabled={fuelInitial <= 0}
+              disabled={isStartDisabled}
               onClick={handleStart}
               variant="default"
             >

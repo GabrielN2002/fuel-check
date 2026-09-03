@@ -181,7 +181,7 @@ function App() {
       )}
       <Card className="w-full md:w-3/4">
         <CardHeader>
-          <CardTitle>Fuel Consumption Check Calculator</CardTitle>
+          <CardTitle>Fuel Consumption Calculator</CardTitle>
           <CardAction>
             <ResetDialog onReset={handleReset} data={calculator} />
           </CardAction>
