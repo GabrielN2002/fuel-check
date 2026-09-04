@@ -201,6 +201,17 @@ function App() {
     setCalculator(initialCalculator);
   };
 
+  const handleHistoryDelete = (index: number) => {
+    setHistory((prev) => prev.filter((_value, i) => index != i));
+  };
+
+  const handleHistoryReset = () => {
+    setHistory([])
+  }
+  const handleHistorySort = ()=> {
+    setHistory((prev)=>prev.toSorted(()=>-1))
+  }
+
   return (
     <div className="m-5 flex flex-col items-center gap-3">
       {(offlineReady || needRefresh) && (
@@ -238,7 +249,7 @@ function App() {
             <CalculateDialog data={calculator} onCalculate={handleCalculate} />
           </div>
           <div className="flex items-center gap-3">
-            <ResultHistory history={history} />
+            <ResultHistory onSort={handleHistorySort} onReset={handleHistoryReset} onDelete={handleHistoryDelete} history={history} />
             <NetworkStatus />
           </div>
         </CardFooter>

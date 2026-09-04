@@ -1,4 +1,10 @@
-import { RotateCcwClock } from "lucide-react";
+import {
+  ArrowDownUp,
+  ListSortAscending,
+  ListSortDescending,
+  RotateCcwClock,
+  Trash,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Drawer,
@@ -12,9 +18,13 @@ import {
 } from "@/components/ui/drawer";
 import type { Calculator } from "@/types/calculator";
 import { formatTime } from "@/utils/formatTime";
+import { useState } from "react";
 
 type ResultHistoryProps = {
   history: Calculator[];
+  onDelete(index: number): void;
+  onReset(): void;
+  onSort(): void;
 };
 
 type HistoryItemProps = {
@@ -41,13 +51,24 @@ function formatDuration(hours: number) {
   return wholeHours > 0 ? `${wholeHours} hr ${minutes} min` : `${minutes} min`;
 }
 
-function ResultHistory({ history }: ResultHistoryProps) {
+function ResultHistory({
+  history,
+  onDelete,
+  onReset,
+  onSort,
+}: ResultHistoryProps) {
+  const [ascending, setAscending] = useState<boolean>(true);
+
+  const handleSort = () => {
+    onSort();
+    setAscending(!ascending);
+  };
   return (
     <Drawer showSwipeHandle>
       <DrawerTrigger render={<Button variant={"outline"} />}>
         <RotateCcwClock />
       </DrawerTrigger>
-      <DrawerContent className="max-h-[90%] min-h-[50%]">
+      <DrawerContent className="max-h-[90%] min-h-[10%] md:w-3/4 md:justify-self-center">
         <DrawerHeader>
           <DrawerTitle>Result History</DrawerTitle>
           <DrawerDescription>
@@ -55,96 +76,111 @@ function ResultHistory({ history }: ResultHistoryProps) {
           </DrawerDescription>
         </DrawerHeader>
         <div className="p-4">
+          {history.length > 0 && (
+            <div className="mx-3 flex gap-3 self-end">
+              <Button onClick={onReset} variant={"destructive"}>
+                Clear
+              </Button>
+              <Button onClick={handleSort} variant={"outline"}>
+                {ascending ? <ListSortAscending /> : <ListSortDescending />}
+              </Button>
+            </div>
+          )}
           {history.map((item, index) => (
             <div
               key={index}
-              className="m-3 flex justify-between items-center rounded-xl border p-3"
+              className="m-3 flex items-center justify-between rounded-xl border p-3"
             >
               <div className="flex flex-col">
-                <b>Fuel Check {index + 1}</b>
-                <div className="text-muted-foreground">{`Closed ${formatTime(item.stopTime)}`}</div>
+                <b>{formatTime(item.stopTime)}</b>
+                <div className="text-muted-foreground">{`Closed ${item.stopTime?.toLocaleDateString()}`}</div>
               </div>
 
-              <Drawer showSwipeHandle>
-                <DrawerTrigger render={<Button variant="outline" />}>
-                  View
-                </DrawerTrigger>
-                <DrawerContent className="max-h-[90%] min-h-[50%]">
-                  <DrawerHeader className="mb-2">
-                    <DrawerTitle>Fuel Check {index + 1}</DrawerTitle>
-                  </DrawerHeader>
-                  <div className="flex flex-col gap-4 overflow-y-auto p-4">
-                    <div className="flex flex-col rounded-xl border p-3">
-                      <b>Initial Reading</b>
-                      <div className="flex flex-col divide-y">
-                        <HistoryItem
-                          title="Time"
-                          item={formatTime(item.startTime)}
-                        />
-                        <HistoryItem
-                          title="Main Fuel"
-                          item={`${item.fuelInitial} lbs`}
-                        />
-                        {item.auxTank && (
+              <div className="flex items-center gap-2">
+                <Drawer showSwipeHandle>
+                  <DrawerTrigger render={<Button variant="outline" />}>
+                    View
+                  </DrawerTrigger>
+                  <DrawerContent className="max-h-[90%] min-h-[10%] md:w-3/4 md:justify-self-center">
+                    <DrawerHeader className="mb-2">
+                      <DrawerTitle>Fuel Check {index + 1}</DrawerTitle>
+                    </DrawerHeader>
+                    <div className="flex flex-col gap-4 overflow-y-auto p-4">
+                      <div className="flex flex-col rounded-xl border p-3">
+                        <b>Initial Reading</b>
+                        <div className="flex flex-col divide-y">
                           <HistoryItem
-                            title="Aux Fuel"
-                            item={`${item.auxInitial} lbs`}
+                            title="Time"
+                            item={formatTime(item.startTime)}
                           />
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col rounded-xl border p-3">
-                      <b>Final Reading</b>
-                      <div className="flex flex-col divide-y">
-                        <HistoryItem
-                          title="Time"
-                          item={formatTime(item.stopTime)}
-                        />
-                        <HistoryItem
-                          title="Main Fuel"
-                          item={`${item.fuelFinal} lbs`}
-                        />
-                        {item.auxTank && (
                           <HistoryItem
-                            title="Aux Fuel"
-                            item={`${item.auxFinal} lbs`}
+                            title="Main Fuel"
+                            item={`${item.fuelInitial} lbs`}
                           />
-                        )}
+                          {item.auxTank && (
+                            <HistoryItem
+                              title="Aux Fuel"
+                              item={`${item.auxInitial} lbs`}
+                            />
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex flex-col rounded-xl border p-3">
-                      <b>Results</b>
-                      <div className="flex flex-col divide-y">
-                        <HistoryItem
-                          title="Burn Rate"
-                          item={`${Math.round(item.burnRate)} lbs/h`}
-                        />
-                        <HistoryItem
-                          title="Time to burn-out"
-                          item={formatDuration(item.timeToBO)}
-                        />
-                        <HistoryItem
-                          title="Burn-out time"
-                          item={formatTime(item.boTime)}
-                        />
-                        <HistoryItem
-                          title="VFR Reserve"
-                          item={formatTime(item.boVFR)}
-                        />
-                        <HistoryItem
-                          title="IFR Reserve"
-                          item={formatTime(item.boIFR)}
-                        />
+                      <div className="flex flex-col rounded-xl border p-3">
+                        <b>Final Reading</b>
+                        <div className="flex flex-col divide-y">
+                          <HistoryItem
+                            title="Time"
+                            item={formatTime(item.stopTime)}
+                          />
+                          <HistoryItem
+                            title="Main Fuel"
+                            item={`${item.fuelFinal} lbs`}
+                          />
+                          {item.auxTank && (
+                            <HistoryItem
+                              title="Aux Fuel"
+                              item={`${item.auxFinal} lbs`}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col rounded-xl border p-3">
+                        <b>Results</b>
+                        <div className="flex flex-col divide-y">
+                          <HistoryItem
+                            title="Burn Rate"
+                            item={`${Math.round(item.burnRate)} lbs/h`}
+                          />
+                          <HistoryItem
+                            title="Time to burn-out"
+                            item={formatDuration(item.timeToBO)}
+                          />
+                          <HistoryItem
+                            title="Burn-out time"
+                            item={formatTime(item.boTime)}
+                          />
+                          <HistoryItem
+                            title="VFR Reserve"
+                            item={formatTime(item.boVFR)}
+                          />
+                          <HistoryItem
+                            title="IFR Reserve"
+                            item={formatTime(item.boIFR)}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <DrawerFooter className="mt-3">
-                    <DrawerClose render={<Button />}>Close</DrawerClose>
-                  </DrawerFooter>
-                </DrawerContent>
-              </Drawer>
+                    <DrawerFooter className="mt-3">
+                      <DrawerClose render={<Button />}>Close</DrawerClose>
+                    </DrawerFooter>
+                  </DrawerContent>
+                </Drawer>
+                <Button onClick={() => onDelete(index)} variant="destructive">
+                  <Trash />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
