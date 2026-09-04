@@ -1,5 +1,4 @@
 import {
-  ArrowDownUp,
   ListSortAscending,
   ListSortDescending,
   RotateCcwClock,
