@@ -1,6 +1,6 @@
 import { formatTime } from "@/utils/formatTime";
 import type { Calculator } from "@/types/calculator";
-import { Fuel, Gauge, ShieldCheck } from "lucide-react";
+import { Fuel, Gauge } from "lucide-react";
 
 type CalculatorResultsProps = {
   data: Calculator;
