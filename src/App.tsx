@@ -7,16 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "./components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import CalculatorResults from "@/components/calculator-results";
 import type { Calculator } from "./types/calculator";
 import StopWatch from "./components/stop-watch";
 import ResetDialog from "./components/reset-dialog";
 import StartDialog from "./components/start-dialog";
 import CalculateDialog from "./components/calculate-dialog";
-import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { Button } from "./components/ui/button";
+import NetworkStatus from "./components/network-status";
+import ResultHistory from "./components/result-history";
+import { APP_VERSION } from "./utils/version";
 
 const STORAGE_KEY = "calculator";
 
@@ -42,6 +43,35 @@ function restoreDate(value: unknown): Date | null {
 
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function loadHistory(): Calculator[] {
+  const savedHistory = localStorage.getItem("history");
+
+  if (!savedHistory) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(savedHistory);
+
+    if (!Array.isArray(parsed)) {
+      throw new Error("Stored history is not an array");
+    }
+
+    return parsed.map((item) => ({
+      ...initialCalculator,
+      ...item,
+      startTime: restoreDate(item.startTime),
+      stopTime: restoreDate(item.stopTime),
+      boTime: restoreDate(item.boTime),
+      boVFR: restoreDate(item.boVFR),
+      boIFR: restoreDate(item.boIFR),
+    }));
+  } catch (error) {
+    console.error("Failed to load history:", error);
+    return [];
+  }
 }
 
 function loadCalculator(): Calculator {
@@ -75,7 +105,8 @@ function loadCalculator(): Calculator {
 
 function App() {
   const [calculator, setCalculator] = useState<Calculator>(loadCalculator);
-  const isOnline = useOnlineStatus();
+  const [history, setHistory] = useState<Calculator[]>(loadHistory);
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -98,6 +129,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(calculator));
   }, [calculator]);
+
+  useEffect(() => {
+    localStorage.setItem("history", JSON.stringify(history));
+  }, [history]);
 
   const handleStart = (
     fuelInitial: Calculator["fuelInitial"],
@@ -143,7 +178,7 @@ function App() {
       const boVFR = new Date(boTime.getTime() - 20 * 60 * 1000);
       const boIFR = new Date(boTime.getTime() - 30 * 60 * 1000);
 
-      return {
+      const result: Calculator = {
         ...previous,
         stopTime,
         fuelFinal,
@@ -155,6 +190,10 @@ function App() {
         auxFinal,
         error: "",
       };
+
+      setHistory((currentHistory) => [...currentHistory, result]);
+
+      return result;
     });
   };
 
@@ -181,7 +220,10 @@ function App() {
       )}
       <Card className="w-full md:w-3/4">
         <CardHeader>
-          <CardTitle>Fuel Consumption Calculator</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <p>Fuel Consumption Calculator </p>
+            <p className="text-xs text-muted-foreground">v{APP_VERSION}</p>
+          </CardTitle>
           <CardAction>
             <ResetDialog onReset={handleReset} data={calculator} />
           </CardAction>
@@ -195,11 +237,9 @@ function App() {
             <StartDialog data={calculator} onStart={handleStart} />
             <CalculateDialog data={calculator} onCalculate={handleCalculate} />
           </div>
-
-          <div className="">
-            <Badge className={isOnline ? "bg-green-300" : "bg-red-300"}>
-              {isOnline ? "Online" : "Offline"}
-            </Badge>
+          <div className="flex items-center gap-3">
+            <ResultHistory history={history} />
+            <NetworkStatus />
           </div>
         </CardFooter>
       </Card>

@@ -1,5 +1,6 @@
+import { formatTime } from "@/utils/formatTime";
 import type { Calculator } from "@/types/calculator";
-import { Clock3, Fuel, Gauge, ShieldCheck } from "lucide-react";
+import { Fuel, Gauge, ShieldCheck } from "lucide-react";
 
 type CalculatorResultsProps = {
   data: Calculator;
@@ -16,16 +17,6 @@ function ResultItem({ label, value }: ResultItemProps) {
       <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="text-right font-semibold tabular-nums">{value}</dd>
     </div>
-  );
-}
-
-function formatTime(date: Date | null) {
-  return (
-    date?.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit",
-    }) ?? "—"
   );
 }
 
@@ -60,10 +51,7 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-lg border bg-muted/30 p-3">
           <div className="mb-1 flex items-center gap-2 text-sm font-medium">
-            <Clock3
-              className="size-4 text-muted-foreground"
-              aria-hidden="true"
-            />
+            <Fuel className="size-4 text-muted-foreground" aria-hidden="true" />
             Initial reading
           </div>
           <dl className="divide-y">
@@ -118,7 +106,7 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
               value={`${Math.round(data.burnRate)} lbs/hr`}
             />
             <ResultItem
-              label="Time to burn out"
+              label="Time to burn-out"
               value={formatDuration(data.timeToBO)}
             />
             <ResultItem label="Burn-out time" value={formatTime(data.boTime)} />

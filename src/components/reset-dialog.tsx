@@ -23,7 +23,7 @@ function ResetDialog({ data, onReset }: ResetDialogProps) {
     <>
       <AlertDialog>
         <AlertDialogTrigger
-          render={<Button disabled={!data.isStarted}>Reset</Button>}
+          render={<Button className="bg-red-300" disabled={!data.isStarted}>Reset</Button>}
         />
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
