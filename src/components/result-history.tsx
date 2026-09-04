@@ -2,7 +2,6 @@ import {
   ListSortAscending,
   ListSortDescending,
   RotateCcwClock,
-  Trash,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -18,6 +17,7 @@ import {
 import type { Calculator } from "@/types/calculator";
 import { formatTime } from "@/utils/formatTime";
 import { useState } from "react";
+import DestructiveDialog from "./destructive-dialog";
 
 type ResultHistoryProps = {
   history: Calculator[];
@@ -77,9 +77,12 @@ function ResultHistory({
         <div className="p-4">
           {history.length > 0 && (
             <div className="mx-3 flex gap-3 self-end">
-              <Button onClick={onReset} variant={"destructive"}>
-                Clear
-              </Button>
+              <DestructiveDialog
+                onAction={onReset}
+                title={"Clear History?"}
+                message="All previous fuel check results will be deleted"
+                action={"Clear"}
+              />
               <Button onClick={handleSort} variant={"outline"}>
                 {ascending ? <ListSortAscending /> : <ListSortDescending />}
               </Button>
@@ -171,19 +174,21 @@ function ResultHistory({
                         </div>
                       </div>
                     </div>
-                    <DrawerFooter className="mt-3">
+                    <DrawerFooter className="my-4">
                       <DrawerClose render={<Button />}>Close</DrawerClose>
                     </DrawerFooter>
                   </DrawerContent>
                 </Drawer>
-                <Button onClick={() => onDelete(index)} variant="destructive">
-                  <Trash />
-                </Button>
+                <DestructiveDialog
+                  onAction={() => onDelete(index)}
+                  title={"Delete Item?"}
+                  action={"Delete"}
+                />
               </div>
             </div>
           ))}
         </div>
-        <DrawerFooter className="mt-3">
+        <DrawerFooter className="my-4">
           <DrawerClose render={<Button />}>Close</DrawerClose>
         </DrawerFooter>
       </DrawerContent>

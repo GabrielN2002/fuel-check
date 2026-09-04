@@ -7,15 +7,15 @@ type CalculatorResultsProps = {
 };
 
 type ResultItemProps = {
-  label: string;
-  value: string;
+  title: string;
+  item: string;
 };
 
-function ResultItem({ label, value }: ResultItemProps) {
+function ResultItem({ title, item }: ResultItemProps) {
   return (
-    <div className="flex items-center justify-between gap-4 py-1">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-right font-semibold tabular-nums">{value}</dd>
+    <div className="flex justify-between py-2">
+      <p className="text-muted-foreground">{title}</p>
+      <b>{item}</b>
     </div>
   );
 }
@@ -47,100 +47,71 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
   }
 
   return (
-    <section className="space-y-4" aria-label="Fuel check results">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg border bg-muted/30 p-3">
-          <div className="mb-1 flex items-center gap-2 text-sm font-medium">
-            <Fuel className="size-4 text-muted-foreground" aria-hidden="true" />
-            Initial reading
+    <div aria-label="Fuel check results">
+      <div className="flex flex-col gap-3 overflow-y-auto">
+        <div className="flex flex-col rounded-xl border p-3">
+          <div className="flex items-center gap-2">
+            <Fuel className="size-4" />
+            <b>Initial Reading</b>
           </div>
-          <dl className="divide-y">
-            <ResultItem label="Time" value={formatTime(data.startTime)} />
-            <ResultItem label="Main Fuel" value={`${data.fuelInitial} lbs`} />
+
+          <div className="flex flex-col divide-y">
+            <ResultItem title="Time" item={formatTime(data.startTime)} />
+            <ResultItem title="Main Fuel" item={`${data.fuelInitial} lbs`} />
             {data.auxTank && (
-              <ResultItem
-                label="Aux Fuel"
-                value={`${data.auxInitial} lbs`}
-              ></ResultItem>
+              <ResultItem title="Aux Fuel" item={`${data.auxInitial} lbs`} />
             )}
-          </dl>
+          </div>
         </div>
 
-        <div className="rounded-lg border bg-muted/30 p-3">
-          <div className="mb-1 flex items-center gap-2 text-sm font-medium">
-            <Fuel className="size-4 text-muted-foreground" aria-hidden="true" />
-            Final reading
-          </div>
-          {data.stopTime ? (
-            <dl className="divide-y">
-              <ResultItem label="Time" value={formatTime(data.stopTime)} />
-              <ResultItem label="Main Fuel" value={`${data.fuelFinal} lbs`} />
+        {data.stopTime && (
+          <div className="flex flex-col rounded-xl border p-3">
+            <div className="flex items-center gap-2">
+              <Fuel className="size-4" />
+              <b>Final Reading</b>
+            </div>
+            <div className="flex flex-col divide-y">
+              <ResultItem title="Time" item={formatTime(data.stopTime)} />
+              <ResultItem title="Main Fuel" item={`${data.fuelFinal} lbs`} />
               {data.auxTank && (
-                <ResultItem
-                  label="Aux Fuel"
-                  value={`${data.auxFinal} lbs`}
-                ></ResultItem>
+                <ResultItem title="Aux Fuel" item={`${data.auxFinal} lbs`} />
               )}
-            </dl>
-          ) : (
-            <p className="py-5 text-sm text-muted-foreground">
-              Waiting for the final fuel reading.
-            </p>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
+
+        {data.boTime && (
+          <div className="flex flex-col rounded-xl border p-3">
+            <div className="flex items-center gap-2">
+              <Gauge className="size-4" />
+              <b>Results</b>
+            </div>
+            <div className="flex flex-col divide-y">
+              <ResultItem
+                title="Burn Rate"
+                item={`${Math.round(data.burnRate)} lbs/h`}
+              />
+              <ResultItem
+                title="Time to burn-out"
+                item={formatDuration(data.timeToBO)}
+              />
+              <ResultItem
+                title="Burn-out time"
+                item={formatTime(data.boTime)}
+              />
+              <ResultItem title="VFR Reserve" item={formatTime(data.boVFR)} />
+              <ResultItem title="IFR Reserve" item={formatTime(data.boIFR)} />
+            </div>
+          </div>
+        )}
       </div>
-
-      {data.stopTime && (
-        <div className="overflow-hidden rounded-lg border">
-          <div className="flex items-center gap-2 border-b bg-muted/50 px-4 py-2">
-            <Gauge
-              className="size-4 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <h2 className="font-semibold">Results</h2>
-          </div>
-
-          <dl className="px-4 py-1">
-            <ResultItem
-              label="Burn rate"
-              value={`${Math.round(data.burnRate)} lbs/hr`}
-            />
-            <ResultItem
-              label="Time to burn-out"
-              value={formatDuration(data.timeToBO)}
-            />
-            <ResultItem label="Burn-out time" value={formatTime(data.boTime)} />
-          </dl>
-
-          <div className="grid border-t bg-muted/20 sm:grid-cols-2 sm:divide-x">
-            <div className="px-4 py-3">
-              <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                <ShieldCheck className="size-4" aria-hidden="true" />
-                VFR reserve
-              </div>
-              <p className="mt-1 text-lg font-semibold tabular-nums">
-                {formatTime(data.boVFR)}
-              </p>
-            </div>
-            <div className="border-t px-4 py-3 sm:border-t-0">
-              <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                <ShieldCheck className="size-4" aria-hidden="true" />
-                IFR reserve
-              </div>
-              <p className="mt-1 text-lg font-semibold tabular-nums">
-                {formatTime(data.boIFR)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {data.error && (
         <p className="text-sm font-medium text-destructive" role="alert">
           {data.error}
         </p>
       )}
-    </section>
+    </div>
   );
 }
 

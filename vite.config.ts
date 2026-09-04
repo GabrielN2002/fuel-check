@@ -20,7 +20,7 @@ export default defineConfig({
         short_name: "Fuel Check",
         description:
           "Calculate your aircraft fuel consumption, how much time you have left of fuel, and when will you run out of fuel",
-        theme_color: "#ffffff",
+        theme_color: "#171717",
         icons: [
           {
             src: "pwa-192x192.png",

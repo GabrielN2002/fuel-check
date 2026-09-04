@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./components/ui/card";
+
 import CalculatorResults from "@/components/calculator-results";
 import type { Calculator } from "./types/calculator";
 import StopWatch from "./components/stop-watch";
-import ResetDialog from "./components/reset-dialog";
 import StartDialog from "./components/start-dialog";
 import CalculateDialog from "./components/calculate-dialog";
 import { useRegisterSW } from "virtual:pwa-register/react";
@@ -18,6 +10,14 @@ import { Button } from "./components/ui/button";
 import NetworkStatus from "./components/network-status";
 import ResultHistory from "./components/result-history";
 import { APP_VERSION } from "./utils/version";
+import DestructiveDialog from "./components/destructive-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./components/ui/dialog";
+import { Info } from "lucide-react";
 
 const STORAGE_KEY = "calculator";
 
@@ -206,16 +206,22 @@ function App() {
   };
 
   const handleHistoryReset = () => {
-    setHistory([])
-  }
-  const handleHistorySort = ()=> {
-    setHistory((prev)=>prev.toSorted(()=>-1))
-  }
+    setHistory([]);
+  };
+  const handleHistorySort = () => {
+    setHistory((prev) => prev.toSorted(() => -1));
+  };
 
   return (
-    <div className="m-5 flex flex-col items-center gap-3">
-      {(offlineReady || needRefresh) && (
-        <div className="flex items-center gap-3 rounded-xl border-2 border-destructive p-2">
+    <div className="flex h-dvh w-full flex-col">
+      <Dialog open={offlineReady || needRefresh}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="size-5" />
+              Attention
+            </DialogTitle>
+          </DialogHeader>
           {offlineReady ? (
             <span>App ready to work offline</span>
           ) : (
@@ -226,34 +232,50 @@ function App() {
           {needRefresh && (
             <Button onClick={() => updateServiceWorker(true)}>Refresh</Button>
           )}
-          <Button onClick={() => close()}>Close</Button>
+          <Button variant={"destructive"} onClick={() => close()}>
+            Close
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      <header className="flex shrink-0 justify-between bg-card p-3">
+        <div className="flex items-center gap-2">
+          <p>Fuel Consumption Calculator </p>
+          <p className="text-xs text-muted-foreground">v{APP_VERSION}</p>
         </div>
-      )}
-      <Card className="w-full md:w-3/4">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <p>Fuel Consumption Calculator </p>
-            <p className="text-xs text-muted-foreground">v{APP_VERSION}</p>
-          </CardTitle>
-          <CardAction>
-            <ResetDialog onReset={handleReset} data={calculator} />
-          </CardAction>
-        </CardHeader>
-        <CardContent>
+        <DestructiveDialog
+          title={"Reset fuel check?"}
+          message={
+            "This will reset all values to their original state and all progress will be lost."
+          }
+          action={"Reset"}
+          onAction={handleReset}
+          data={calculator}
+        />
+      </header>
+
+      <main className="min-h-0 flex-1 overflow-y-auto bg-card p-3">
+        <div className="flex min-h-full flex-col justify-center">
           <StopWatch startTime={calculator.startTime} />
           <CalculatorResults data={calculator} />
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="flex gap-3">
-            <StartDialog data={calculator} onStart={handleStart} />
-            <CalculateDialog data={calculator} onCalculate={handleCalculate} />
-          </div>
-          <div className="flex items-center gap-3">
-            <ResultHistory onSort={handleHistorySort} onReset={handleHistoryReset} onDelete={handleHistoryDelete} history={history} />
-            <NetworkStatus />
-          </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </main>
+
+      <footer className="flex shrink-0 justify-between bg-card px-3 py-8">
+        <div className="flex gap-3">
+          <StartDialog data={calculator} onStart={handleStart} />
+          <CalculateDialog data={calculator} onCalculate={handleCalculate} />
+        </div>
+        <div className="flex items-center gap-3">
+          <ResultHistory
+            onSort={handleHistorySort}
+            onReset={handleHistoryReset}
+            onDelete={handleHistoryDelete}
+            history={history}
+          />
+          <NetworkStatus />
+        </div>
+      </footer>
     </div>
   );
 }
