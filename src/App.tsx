@@ -17,8 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./components/ui/dialog";
-import { Info } from "lucide-react";
-import { Analytics } from "@vercel/analytics/react"
+import { Info, Share, WifiOff } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 
 const STORAGE_KEY = "calculator";
 
@@ -200,6 +200,7 @@ function App() {
 
   const handleReset = () => {
     setCalculator(initialCalculator);
+    handleHistoryReset();
   };
 
   const handleHistoryDelete = (index: number) => {
@@ -217,37 +218,53 @@ function App() {
     <div className="flex h-dvh w-full flex-col">
       <Dialog open={offlineReady || needRefresh}>
         <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Info className="size-5" />
-              Attention
-            </DialogTitle>
-          </DialogHeader>
-          {offlineReady ? (
-            <span>App ready to work offline</span>
-          ) : (
-            <span>
-              New content available, click on reload button to update.
-            </span>
-          )}
           {needRefresh && (
-            <Button onClick={() => updateServiceWorker(true)}>Refresh</Button>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Info className="size-5" />
+                Attention
+              </DialogTitle>
+            </DialogHeader>
           )}
-          <Button variant={"destructive"} onClick={() => close()}>
-            Close
-          </Button>
+
+          {offlineReady ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <WifiOff className="size-4" />
+                <p>App ready to work offline</p>
+              </div>
+              <div className="flex items-center gap-2 font-bold text-blue-300">
+                <Share className="size-4" />
+                <p>Add website to home screen for easy acces</p>
+              </div>
+            </div>
+          ) : (
+            <div className="m-1">
+              <p>New content available, click on reload button to update.</p>
+            </div>
+          )}
+          {needRefresh ? (
+            <Button
+              variant={"destructive"}
+              onClick={() => updateServiceWorker(true)}
+            >
+              Reload
+            </Button>
+          ) : (
+            <Button onClick={() => close()}>Close</Button>
+          )}
         </DialogContent>
       </Dialog>
 
-      <header className="flex shrink-0 justify-between bg-card p-3">
+      <header className="flex shrink-0 touch-none justify-between bg-card p-3">
         <div className="flex items-center gap-2">
-          <p>Fuel Consumption Calculator </p>
+          <b>Fuel Consumption Calculator </b>
           <p className="text-xs text-muted-foreground">v{APP_VERSION}</p>
         </div>
         <DestructiveDialog
           title={"Reset fuel check?"}
           message={
-            "This will reset all values to their original state and all progress will be lost."
+            "This will reset all values and history to their original state and all progress will be lost."
           }
           action={"Reset"}
           onAction={handleReset}
@@ -255,14 +272,14 @@ function App() {
         />
       </header>
 
-      <main className="min-h-0 flex-1 overflow-y-auto bg-card p-3">
+      <main className="min-h-0 flex-1 scrollbar-thumb-secondary scrollbar-track-transparent overflow-y-auto bg-card p-3">
         <div className="flex min-h-full flex-col justify-center">
           <StopWatch startTime={calculator.startTime} />
           <CalculatorResults data={calculator} />
         </div>
       </main>
 
-      <footer className="flex shrink-0 justify-between bg-card px-3 py-8">
+      <footer className="flex shrink-0 touch-none justify-between bg-card px-3 py-8">
         <div className="flex gap-3">
           <StartDialog data={calculator} onStart={handleStart} />
           <CalculateDialog data={calculator} onCalculate={handleCalculate} />
@@ -277,7 +294,7 @@ function App() {
           <NetworkStatus />
         </div>
       </footer>
-      <Analytics/>
+      <Analytics />
     </div>
   );
 }

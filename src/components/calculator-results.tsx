@@ -1,6 +1,13 @@
 import { formatTime } from "@/utils/formatTime";
 import type { Calculator } from "@/types/calculator";
-import { Fuel, Gauge } from "lucide-react";
+import { ChevronDown, ChevronUp, Fuel, Gauge } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
+import { Button } from "./ui/button";
+import { useEffect, useState } from "react";
 
 type CalculatorResultsProps = {
   data: Calculator;
@@ -46,38 +53,79 @@ function CalculatorResults({ data }: CalculatorResultsProps) {
     );
   }
 
+  const [initialOpen, setInitialOpen] = useState(true);
+  const [finalOpen, setFinalOpen] = useState(true);
+
+  useEffect(() => {
+    if (data.boTime) {
+      setInitialOpen(false);
+      setFinalOpen(false);
+    }
+  }, [data.boTime]);
+
   return (
     <div aria-label="Fuel check results">
-      <div className="flex flex-col gap-3 overflow-y-auto">
-        <div className="flex flex-col rounded-xl border p-3">
-          <div className="flex items-center gap-2">
-            <Fuel className="size-4" />
-            <b>Initial Reading</b>
-          </div>
+      <div className="flex flex-col gap-3">
+        <Collapsible open={initialOpen} onOpenChange={setInitialOpen}>
+          <div className="flex flex-col rounded-xl border p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Fuel className="size-4" />
+                <b>Initial Reading</b>
+              </div>
+              <CollapsibleTrigger render={<Button variant={"outline"} />}>
+                {initialOpen ? <ChevronUp /> : <ChevronDown />}
+              </CollapsibleTrigger>
+            </div>
 
-          <div className="flex flex-col divide-y">
-            <ResultItem title="Time" item={formatTime(data.startTime)} />
-            <ResultItem title="Main Fuel" item={`${data.fuelInitial} lbs`} />
-            {data.auxTank && (
-              <ResultItem title="Aux Fuel" item={`${data.auxInitial} lbs`} />
-            )}
+            <CollapsibleContent>
+              <div className="flex flex-col divide-y">
+                <ResultItem title="Time" item={formatTime(data.startTime)} />
+                <ResultItem
+                  title="Main Fuel"
+                  item={`${data.fuelInitial} lbs`}
+                />
+                {data.auxTank && (
+                  <ResultItem
+                    title="Aux Fuel"
+                    item={`${data.auxInitial} lbs`}
+                  />
+                )}
+              </div>
+            </CollapsibleContent>
           </div>
-        </div>
+        </Collapsible>
 
         {data.stopTime && (
-          <div className="flex flex-col rounded-xl border p-3">
-            <div className="flex items-center gap-2">
-              <Fuel className="size-4" />
-              <b>Final Reading</b>
+          <Collapsible open={finalOpen} onOpenChange={setFinalOpen}>
+            <div className="flex flex-col rounded-xl border p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Fuel className="size-4" />
+                  <b>Final Reading</b>
+                </div>
+                <CollapsibleTrigger render={<Button variant={"outline"} />}>
+                  {finalOpen ? <ChevronUp /> : <ChevronDown />}
+                </CollapsibleTrigger>
+              </div>
+
+              <CollapsibleContent>
+                <div className="flex flex-col divide-y">
+                  <ResultItem title="Time" item={formatTime(data.stopTime)} />
+                  <ResultItem
+                    title="Main Fuel"
+                    item={`${data.fuelFinal} lbs`}
+                  />
+                  {data.auxTank && (
+                    <ResultItem
+                      title="Aux Fuel"
+                      item={`${data.auxFinal} lbs`}
+                    />
+                  )}
+                </div>
+              </CollapsibleContent>
             </div>
-            <div className="flex flex-col divide-y">
-              <ResultItem title="Time" item={formatTime(data.stopTime)} />
-              <ResultItem title="Main Fuel" item={`${data.fuelFinal} lbs`} />
-              {data.auxTank && (
-                <ResultItem title="Aux Fuel" item={`${data.auxFinal} lbs`} />
-              )}
-            </div>
-          </div>
+          </Collapsible>
         )}
 
         {data.boTime && (
