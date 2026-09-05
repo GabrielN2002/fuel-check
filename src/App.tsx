@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "./components/ui/dialog";
 import { Info } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react"
 
 const STORAGE_KEY = "calculator";
 
@@ -276,6 +277,7 @@ function App() {
           <NetworkStatus />
         </div>
       </footer>
+      <Analytics/>
     </div>
   );
 }
