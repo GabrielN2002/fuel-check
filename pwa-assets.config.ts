@@ -10,8 +10,11 @@ export default defineConfig({
   },
   preset: {
     ...minimal2023Preset,
+    transparent: { ...minimal2023Preset.transparent, padding: 0 },
+    maskable: { ...minimal2023Preset.maskable, padding: 0 },
+    apple: { ...minimal2023Preset.apple, padding: 0 },
     appleSplashScreens: createAppleSplashScreens({
-      padding: 0.3,
+      padding: 0.8,
       resizeOptions: { background: "white", fit: "contain" },
       // by default, dark splash screens are exluded
       darkResizeOptions: { background: "black" },
