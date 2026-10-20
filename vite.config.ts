@@ -7,6 +7,9 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    allowedHosts: [".sailfish-capella.ts.net"],
+  },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
@@ -23,23 +26,31 @@ export default defineConfig({
         theme_color: "#171717",
         icons: [
           {
-            src: "pwa-192x192.png",
+            src: "/icons/icon-192x192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any",
           },
           {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
+            src: "/icons/icon-384x384.png",
+            sizes: "384x384",
             type: "image/png",
+            purpose: "any",
           },
           {
-            src: "pwa-512x512.png",
+            src: "/icons/icon-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "pwa-512x512.png",
+            src: "/icons/icon-192x192-maskable.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "/icons/icon-512x512-maskable.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
